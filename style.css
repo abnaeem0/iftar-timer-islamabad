@@ -1,0 +1,68 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f5f5f5;
+  color: #222;
+  text-align: center;
+  padding-top: 60px;
+}
+
+.container {
+  width: 320px;
+  margin: auto;
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.1);
+}
+
+#current-phase {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+}
+
+#countdown {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+}
+
+button {
+  margin-top: 14px;
+  padding: 6px 12px;
+  font-size: 1rem;
+}
+
+.timeline {
+  position: relative;
+  display: flex;
+  height: 50px;
+  margin-top: 25px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #ccc;
+}
+
+.segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: white;
+}
+
+#seg-exercise { background: #6c9; flex: 15; }
+#seg-meditate { background: #69c; flex: 15; }
+#seg-eat { background: #f90; flex: 13; }
+#seg-masjid { background: #aaa; flex: 5; }
+
+.segment.active {
+  outline: 3px solid black;
+}
+
+.now-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: red;
+  left: 0%;
+}

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ramadan Routine Timer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="container">
+    <h1>Ramadan Routine Timer (Islamabad)</h1>
+    <div id="current-phase">Loading...</div>
+    <div id="countdown">--:--:--</div>
+    
+    <div class="timeline">
+        <div class="segment" id="seg-exercise">Exercise</div>
+        <div class="segment" id="seg-meditate">Meditate</div>
+        <div class="segment" id="seg-eat">Eat</div>
+        <div class="segment" id="seg-masjid">Masjid</div>
+        <div class="now-line" id="nowLine"></div>
+    </div>
+
+    <div id="info"></div>
+    <label>
+        <input type="checkbox" id="testModeCheckbox">
+        Enable Test Mode
+    </label>
+    <input type="time" id="testMaghribTime" value="18:30">
+    <button id="refreshBtn">Refresh Now</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
