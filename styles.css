@@ -50,9 +50,9 @@ button {
 }
 
 #seg-exercise { background: #6c9; flex: 15; }
-#seg-meditate { background: #69c; flex: 15; }
+#seg-dua { background: #69c; flex: 15; }
 #seg-eat { background: #f90; flex: 13; }
-#seg-masjid { background: #aaa; flex: 5; }
+
 
 .segment.active {
   outline: 3px solid black;

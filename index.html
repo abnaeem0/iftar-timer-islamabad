@@ -9,27 +9,64 @@
 <body>
 
   <div class="container">
+    <!-- Page Header -->
     <h1>Ramadan Routine Timer (Islamabad)</h1>
+
+    <!-- Current Phase (e.g., Exercise, Dua, Eat) -->
     <div id="current-phase">Loading...</div>
+
+    <!-- Countdown timer until next event or Maghrib -->
     <div id="countdown">--:--:--</div>
-    
+
+    <!-- Existing Maghrib-based timeline -->
     <div class="timeline">
         <div class="segment" id="seg-exercise">Exercise</div>
-        <div class="segment" id="seg-meditate">Meditate</div>
+        <div class="segment" id="seg-dua">Dua</div>
         <div class="segment" id="seg-eat">Eat</div>
-        <div class="segment" id="seg-masjid">Masjid</div>
         <div class="now-line" id="nowLine"></div>
     </div>
 
+    <!-- Additional Info Section -->
     <div id="info"></div>
+
+    <!-- Test Mode Section (existing) -->
     <label>
         <input type="checkbox" id="testModeCheckbox">
         Enable Test Mode
     </label>
     <input type="time" id="testMaghribTime" value="18:30">
     <button id="refreshBtn">Refresh Now</button>
+
+    <!-- ----------------- NEW ELEMENTS ----------------- -->
+
+    <!-- Sehri / Fajr tracking -->
+    <div class="sehri-section">
+        <h2>Sehri / Fajr Tracking</h2>
+
+        <!-- Time since today’s Fajr -->
+        <div id="time-since-fajr">
+            Time passed since Fajr: <span id="fajr-passed">--:--:--</span>
+        </div>
+
+        <!-- Time until next Fajr -->
+        <div id="time-until-next-fajr">
+            Time left until next Fajr: <span id="fajr-next">--:--:--</span>
+        </div>
+    </div>
+
+    <!-- ----------------- ISLAMABAD PRAYER TIMES ----------------- -->
+    <div class="islamabad-prayer-times">
+      <h2>Islamabad Prayer Times (Hanafi + Shafi Asr)</h2>
+      <div id="islamabadTimes">
+        <!-- JS will populate: Fajr, Sunrise, Zuhr, Asr Shafi, Asr Hanafi, Maghrib, Isha -->
+        Loading…
+      </div>
+    </div>
+
+
   </div>
 
+  <!-- Link to main JavaScript -->
   <script src="script.js"></script>
 </body>
 </html>
