@@ -10,22 +10,19 @@ const testModeCheckbox = document.getElementById("testModeCheckbox");
 const testMaghribInput = document.getElementById("testMaghribTime");
 
 let maghribTime = null;
+let nextFajr = null;
 
 // ---------------- NEW ELEMENTS ----------------
 
 // Sehri / Fajr tracking elements
-const fajrPassedEl = document.getElementById("fajr-passed");
 const fajrNextEl = document.getElementById("fajr-next");
-
-
 
 // ---------------- UTILITY FUNCTIONS ----------------
 
 // Parse HH:MM string into a Date object for today
-function parseTimeString(t) {
+function parseTimeString(t, date = new Date()) {
   const [h, m] = t.split(":").map(Number);
-  const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), h, m, 0);
 }
 
 // Format milliseconds as HH:MM:SS
@@ -38,25 +35,23 @@ function formatDiff(ms) {
   return `${h}:${m}:${s}`;
 }
 
-// ---------------- FETCH MAGHRIB AND START TIMER ----------------
+// ---------------- FETCH MAGHRIB AND NEXT FAJR ----------------
 async function fetchPrayer() {
 
-    // ---------------- TEST MODE ----------------
+  // ---------------- TEST MODE ----------------
   if (testModeCheckbox.checked) {
     const fakeMaghribStr = testMaghribInput.value; // HH:MM
     maghribTime = parseTimeString(fakeMaghribStr);
-
-    // Use default times for Fajr & Asr in test mode
-    todayFajr = parseTimeString("05:00"); // default Fajr
-    tomorrowFajr = new Date(todayFajr.getTime() + 24*60*60*1000);
-    asrShafi = parseTimeString("15:30"); // default Shafi Asr
+    nextFajr = parseTimeString("05:00"); // default Fajr
+    const asrShafi = parseTimeString("15:30"); // default Shafi Asr
 
     infoEl.textContent = `Test Mode: Maghrib at ${fakeMaghribStr}`;
 
     // Start timers and update Fajr tracking
     startTimer();
-    updateFajrTracking({Fajr: "05:00"}); // pass fake todayFajr
-    // Update the prayer times section
+    updateFajrTracking();
+
+    // Update prayer times section
     const timesEl = document.getElementById("islamabadTimes");
     timesEl.innerHTML = `
       <p>Fajr: 05:00</p>
@@ -67,13 +62,13 @@ async function fetchPrayer() {
       <p>Maghrib: ${fakeMaghribStr}</p>
       <p>Isha: 18:45</p>
     `;
-    return; // stop function so no API calls run
+    return;
   }
 
   phaseEl.textContent = "Fetching prayer times…";
 
   try {
-    // ---------------- 1. Fetch today Hanafi (method=2) ----------------
+    // ---------------- 1. Fetch today Hanafi ----------------
     const resToday = await fetch(
       `https://api.aladhan.com/v1/timingsByCity?city=Islamabad&country=Pakistan&method=1&school=1`
     );
@@ -82,32 +77,39 @@ async function fetchPrayer() {
 
     // Store variables
     maghribTime = parseTimeString(timingsHanafi.Maghrib);
-    todayFajr = parseTimeString(timingsHanafi.Fajr);
     const asrHanafi = parseTimeString(timingsHanafi.Asr);
 
-    // ---------------- 2. Fetch today Shafi Asr only (method=1) ----------------
+    // ---------------- 2. Fetch today Shafi Asr ----------------
     const resShafi = await fetch(
       `https://api.aladhan.com/v1/timingsByCity?city=Islamabad&country=Pakistan&method=1&school=0`
     );
     const dataShafi = await resShafi.json();
     const asrShafi = parseTimeString(dataShafi.data.timings.Asr);
 
-    // ---------------- 3. Fetch tomorrow Fajr (Hanafi) ----------------
-    const tomorrowDate = new Date();
-    tomorrowDate.setDate(tomorrowDate.getDate() + 1);
-    const tomorrowDateStr = `${String(tomorrowDate.getDate()).padStart(2,'0')}-${String(tomorrowDate.getMonth()+1).padStart(2,'0')}-${tomorrowDate.getFullYear()}`;
+    // ---------------- 3. Determine next Fajr ----------------
+    const now = new Date();
+    const todayFajr = parseTimeString(timingsHanafi.Fajr);
 
-    const resTomorrow = await fetch(
-      `https://api.aladhan.com/v1/timingsByCity/${tomorrowDateStr}?city=Islamabad&country=Pakistan&method=1&school=1`
-    );
-    const dataTomorrow = await resTomorrow.json();
-    const tomorrowFajrStr = dataTomorrow.data.timings.Fajr;
-    tomorrowFajr = parseTimeString(tomorrowFajrStr);
+    if (todayFajr > now) {
+      nextFajr = todayFajr;
+    } else {
+      // Today’s Fajr passed → fetch tomorrow Fajr
+      const tomorrowDate = new Date();
+      tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+      const tomorrowDateStr = `${String(tomorrowDate.getDate()).padStart(2,'0')}-${String(tomorrowDate.getMonth()+1).padStart(2,'0')}-${tomorrowDate.getFullYear()}`;
+
+      const resTomorrow = await fetch(
+        `https://api.aladhan.com/v1/timingsByCity/${tomorrowDateStr}?city=Islamabad&country=Pakistan&method=1&school=1`
+      );
+      const dataTomorrow = await resTomorrow.json();
+      const tomorrowFajrStr = dataTomorrow.data.timings.Fajr;
+      nextFajr = parseTimeString(tomorrowFajrStr, tomorrowDate);
+    }
 
     // ---------------- 4. Update Fajr / Sehri timers ----------------
-    updateFajrTracking(timingsHanafi);
+    updateFajrTracking();
 
-    // ---------------- 5. Update Islamabads prayer times section ----------------
+    // ---------------- 5. Update Islamabad's prayer times section ----------------
     const timesEl = document.getElementById("islamabadTimes");
     timesEl.innerHTML = `
       <p>Fajr: ${timingsHanafi.Fajr}</p>
@@ -119,7 +121,7 @@ async function fetchPrayer() {
       <p>Isha: ${timingsHanafi.Isha}</p>
     `;
 
-    // ---------------- 6. Start your existing Maghrib timer ----------------
+    // ---------------- 6. Start timers ----------------
     startTimer();
 
     // ---------------- 7. Display info ----------------
@@ -130,7 +132,6 @@ async function fetchPrayer() {
     console.error(err);
   }
 }
-
 
 // ---------------- TIMER FUNCTION ----------------
 function startTimer() {
@@ -183,43 +184,23 @@ function startTimer() {
     percent = Math.max(0, Math.min(100, percent));
     document.getElementById("nowLine").style.left = percent + "%";
 
-    // ---------------- NEW: Update Sehri / Fajr timers every second ----------------
+    // ---------------- UPDATE NEXT FAJR TIMER ----------------
     updateFajrTracking();
   }, 1000);
 }
 
-// ---------------- NEW FUNCTION: SEHRI / FAJR TRACKING ----------------
-let todayFajr = null;
-let tomorrowFajr = null;
+// ---------------- NEW FUNCTION: NEXT FAJR TRACKING ----------------
+function updateFajrTracking() {
+  if (!nextFajr) return;
 
-function updateFajrTracking(timings = null) {
   const now = new Date();
+  const diff = nextFajr - now;
 
-  // If timings are provided, set today Fajr
-  if (timings && timings.Fajr) {
-    todayFajr = parseTimeString(timings.Fajr);
-  }
+  const fajrTimeStr = nextFajr.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  fajrNextEl.textContent = `${fajrTimeStr} — ${formatDiff(diff)} left`;
 
-  // If no today Fajr yet, estimate 5:00 AM
-  if (!todayFajr) todayFajr = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 5, 0, 0);
 
-  // Compute next Fajr (tomorrow)
-  tomorrowFajr = new Date(todayFajr.getTime() + 24 * 60 * 60 * 1000);
-
-  // Format the actual time as HH:MM
-  const fajrTimeStr = todayFajr.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-  // Time since today's Fajr
-  const sinceFajr = now - todayFajr;
-  fajrPassedEl.textContent = `${fajrTimeStr} — ${formatDiff(sinceFajr)} passed`;
-
-  // Time until next Fajr
-  const untilNextFajr = tomorrowFajr - now;
-  fajrNextEl.textContent = `${fajrTimeStr} — ${formatDiff(untilNextFajr)} left`;
 }
-
-
-
 
 // ---------------- INITIAL FETCH ----------------
 fetchPrayer();

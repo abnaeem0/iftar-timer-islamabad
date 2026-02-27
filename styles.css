@@ -66,3 +66,9 @@ button {
   background: red;
   left: 0%;
 }
+
+#islamabadTimes p {
+  margin: 2px 0;       /* reduce vertical spacing */
+  line-height: 1.2;    /* optional: tighter lines */
+  text-align: center;    /* optional: if you want it left-aligned */
+}
