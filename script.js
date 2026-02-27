@@ -27,13 +27,15 @@ function parseTimeString(t, date = new Date()) {
 
 // Format milliseconds as HH:MM:SS
 function formatDiff(ms) {
-  if (ms <= 0) return "00:00:00";
+  const sign = ms < 0 ? "-" : "";
+  ms = Math.abs(ms);
   const total = Math.floor(ms / 1000);
   const h = String(Math.floor(total / 3600)).padStart(2, "0");
   const m = String(Math.floor((total % 3600) / 60)).padStart(2, "0");
   const s = String(total % 60).padStart(2, "0");
-  return `${h}:${m}:${s}`;
+  return `${sign}${h}:${m}:${s}`;
 }
+
 
 // ---------------- FETCH MAGHRIB AND NEXT FAJR ----------------
 async function fetchPrayer() {
@@ -161,7 +163,7 @@ function startTimer() {
       diff = eatEnd - now;
     } else {
       phase = "Masjid / Done";
-      diff = 0;
+      diff = eatEnd - now; // negative number of milliseconds since Eat ended
     }
 
     // Highlight active segment
