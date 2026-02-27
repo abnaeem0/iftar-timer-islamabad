@@ -98,7 +98,7 @@ async function fetchPrayer() {
     const tomorrowDateStr = `${String(tomorrowDate.getDate()).padStart(2,'0')}-${String(tomorrowDate.getMonth()+1).padStart(2,'0')}-${tomorrowDate.getFullYear()}`;
 
     const resTomorrow = await fetch(
-      `https://api.aladhan.com/v1/timingsByCity?city=Islamabad&country=Pakistan&method=1&school=1&date=${tomorrowDateStr}`
+      `https://api.aladhan.com/v1/timingsByCity/${tomorrowDateStr}?city=Islamabad&country=Pakistan&method=1&school=1`
     );
     const dataTomorrow = await resTomorrow.json();
     const tomorrowFajrStr = dataTomorrow.data.timings.Fajr;
